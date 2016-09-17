@@ -1,0 +1,46 @@
+---
+- name: Installing required packages to compile Python (RedHat)
+  yum: name={{ item }} state=present
+  when: ansible_os_family in ('RedHat', 'CentOS')
+  with_items:
+    - gcc
+    - patch
+    - sqlite-devel
+    - readline-devel
+    - openssl-devel
+    - bzip2-devel
+    - git
+
+- name: Installing required packages to compile Python (Debian)
+  apt: name={{ item }} state=present update_cache=yes
+  when:  ansible_os_family in ('Ubuntu', 'Debian')
+  with_items:
+    - gcc
+    - patch
+    - libsqlite3-dev
+    - libreadline-dev
+    - libbz2-dev
+    - libssl-dev
+    - git
+
+- name: Check if pyenv is installed
+  stat: path="/home/{{ item.username }}/.pyenv/bin/pyenv"
+  become: yes
+  become_user: "{{ item.username }}"
+  register: pyenv
+  with_items: "{{ users }}"
+  when: "{{ item.pyenv is defined and item.pyenv }}"
+
+- name: Installing pyenv
+  git: repo=https://github.com/yyuu/pyenv.git dest=/home/{{ item.item.username }}/.pyenv
+  become: yes
+  become_user: "{{ item.item.username }}"
+  when: item.stat is defined and not item.stat.exists
+  with_items: "{{ pyenv.results }}"
+
+- name: Installing pyenv-virtualenv
+  git: repo=https://github.com/yyuu/pyenv-virtualenv.git dest=~/.pyenv/plugins/pyenv-virtualenv
+  become: yes
+  become_user: "{{ item.item.username }}"
+  when: item.stat is defined and not item.stat.exists
+  with_items: "{{ pyenv.results }}"
