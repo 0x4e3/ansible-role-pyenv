@@ -10,6 +10,7 @@
     - openssl-devel
     - bzip2-devel
     - git
+    - make
 
 - name: Installing required packages to compile Python (Debian)
   apt: name={{ item }} state=present update_cache=yes
@@ -22,6 +23,7 @@
     - libbz2-dev
     - libssl-dev
     - git
+    - make
 
 - name: Check if pyenv is installed
   stat: path="/home/{{ item.username }}/.pyenv/bin/pyenv"
